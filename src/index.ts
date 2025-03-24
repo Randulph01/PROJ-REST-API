@@ -1,22 +1,19 @@
 import express from "express";
-import "reflect-metadata";
-import { createConnection } from "typeorm";
-import userRoutes from "./routes/user";
+import { AppDataSource } from "./ormconfig";
+import userRoutes from "./routes/user"; // import your user routes
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(express.json()); // middleware to parse JSON
+app.use("/api", userRoutes); // add the user routes under the /api path
 
-createConnection()
+AppDataSource.initialize()
   .then(() => {
-    console.log("Connected to database");
-
-    // Register routes
-    app.use("/users", userRoutes);
-
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
+    console.log("Database connected!");
   })
-  .catch((error) => console.log(error));
+  .catch((error) => console.log("Error: ", error));
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

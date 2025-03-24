@@ -1,33 +1,32 @@
 import { Router } from "express";
-import { getRepository } from "typeorm";
-import { User } from "../entities/User";
+import { User } from "../entities/User"; // import the User entity
+import { AppDataSource } from "../ormconfig"; // import your AppDataSource
 
 const router = Router();
+const userRepository = AppDataSource.getRepository(User);
 
-// GET /users - List all users
-router.get("/", async (req, res) => {
+// Route to list all users
+router.get("/users", async (req, res) => {
   try {
-    const userRepository = getRepository(User);
-    const users = await userRepository.find();
+    const users = await userRepository.find(); // fetch all users
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching users" });
+    res.status(500).json({ message: "Error retrieving users", error });
   }
 });
 
-// GET /users/:id - Retrieve a single user by ID
-router.get("/:id", async (req, res) => {
+// Route to retrieve a user by ID
+router.get("/user/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    const userRepository = getRepository(User);
-    const user = await userRepository.findOne(req.params.id);
-    
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    const user = await userRepository.findOneBy({ id: parseInt(id) });
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: "User not found" });
     }
-
-    res.json(user);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching user" });
+    res.status(500).json({ message: "Error retrieving user", error });
   }
 });
 
